@@ -1,0 +1,10 @@
+# Go
+bin/
+*.exe
+*.out
+
+# Docker
+*.log
+
+# OS
+.DS_Store
