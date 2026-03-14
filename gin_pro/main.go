@@ -1,43 +1,39 @@
 package main
 
 import (
-	"gin_pro/handlers"
-	"fmt"
-	"os"
+    "gin_pro/handlers"
+    "fmt"
+    "os"
 
-	"github.com/gin-gonic/gin"
-	"github.com/gin-contrib/cors"
-
-	"gin_pro/db"
+    "github.com/gin-gonic/gin"
+    "github.com/gin-contrib/cors"
+    "gin_pro/db"
 )
 
 func main() {
-	// DB 初期化
     if err := db.InitDB(); err != nil {
         panic(err)
-	}
-	r := gin.Default()
+    }
 
-	 r.Use(cors.New(cors.Config{
-        AllowOrigins: []string{"http://localhost:3000"},
+    r := gin.Default()
+
+    r.Use(cors.New(cors.Config{
+        AllowOrigins: []string{
+			"http://localhost:3000",
+			"http://localhost:3001",
+		},
         AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
         AllowHeaders: []string{"Content-Type"},
     }))
 
 
-    r.GET("/tasks", handlers.GetTasks)
-    r.POST("/tasks", handlers.CreateTask)
-    r.PUT("/tasks/:id", handlers.UpdateTask)
-    r.DELETE("/tasks/:id", handlers.DeleteTask)
+    fmt.Println("HOST:", os.Getenv("DB_HOST"))
+    fmt.Println("PORT:", os.Getenv("DB_PORT"))
 
-	r.GET("/customers", handlers.GetCustomers)
-	r.POST("/customers", handlers.InsertCustomers)
-	r.PUT("/customers", handlers.UpdateCustomer)
-	r.PUT("/customers/:id", handlers.UpdateCustomer)
-	r.DELETE("/customers/:id", handlers.DeleteCustomer)
+    r.GET("/todos", handlers.GetTodos)
+    r.POST("/todos", handlers.CreateTodo)
+    r.PUT("/todos/:id", handlers.UpdateTodo)
+    r.DELETE("/todos/:id", handlers.DeleteTodo)
 
     r.Run(":8080")
-
-	fmt.Println("HOST:", os.Getenv("DB_HOST"))
-fmt.Println("PORT:", os.Getenv("DB_PORT"))
 }
