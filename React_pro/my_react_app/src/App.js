@@ -3,70 +3,43 @@ import React, { useEffect, useState } from 'react';
 const API = 'http://localhost:8080';
 
 function App() {
-  const [tasks, setTasks] = useState([]);
-  const [customers, setCustomers] = useState([]);
-  const [newTask, setNewTask] = useState('');
-  const [newCustomer, setNewCustomer] = useState({ name: '', jender: '' });
-  const [editingTask, setEditingTask] = useState(null);
-  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [todos, setTodos] = useState([]);
+  const [newTodo, setNewTodo] = useState({ title: '', name: '', jender: '' });
+  const [editingTodo, setEditingTodo] = useState(null);
 
   const fetchAll = () => {
-    fetch(`${API}/tasks`).then(r => r.json()).then(d => setTasks(d || []));
-    fetch(`${API}/customers`).then(r => r.json()).then(d => setCustomers(d || []));
+    fetch(`${API}/todos`).then(r => r.json()).then(d => setTodos(d || []));
   };
 
   useEffect(() => { fetchAll(); }, []);
 
-  // Task
-  const addTask = () => {
-    if (!newTask.trim()) return;
-    fetch(`${API}/tasks`, {
+  const addTodo = () => {
+    if (!newTodo.title.trim() || !newTodo.name.trim()) return;
+    fetch(`${API}/todos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newTask, done: false }),
-    }).then(() => { setNewTask(''); fetchAll(); });
+      body: JSON.stringify({ ...newTodo, done: false }),
+    }).then(() => { setNewTodo({ title: '', name: '', jender: '' }); fetchAll(); });
   };
 
-  const deleteTask = (id) => {
-    fetch(`${API}/tasks/${id}`, { method: 'DELETE' }).then(fetchAll);
+  const deleteTodo = (id) => {
+    fetch(`${API}/todos/${id}`, { method: 'DELETE' }).then(fetchAll);
   };
 
-  const toggleTask = (task) => {
-    fetch(`${API}/tasks/${task.id}`, {
+  const toggleTodo = (todo) => {
+    fetch(`${API}/todos/${todo.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: task.title, done: !task.done }),
+      body: JSON.stringify({ ...todo, done: !todo.done }),
     }).then(fetchAll);
   };
 
-  const saveTask = (task) => {
-    fetch(`${API}/tasks/${task.id}`, {
+  const saveTodo = () => {
+    fetch(`${API}/todos/${editingTodo.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: editingTask.title, done: editingTask.done }),
-    }).then(() => { setEditingTask(null); fetchAll(); });
-  };
-
-  // Customer
-  const addCustomer = () => {
-    if (!newCustomer.name.trim() || !newCustomer.jender.trim()) return;
-    fetch(`${API}/customers`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newCustomer),
-    }).then(() => { setNewCustomer({ name: '', jender: '' }); fetchAll(); });
-  };
-
-  const deleteCustomer = (id) => {
-    fetch(`${API}/customers/${id}`, { method: 'DELETE' }).then(fetchAll);
-  };
-
-  const saveCustomer = (customer) => {
-    fetch(`${API}/customers/${customer.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editingCustomer.name, jender: editingCustomer.jender }),
-    }).then(() => { setEditingCustomer(null); fetchAll(); });
+      body: JSON.stringify(editingTodo),
+    }).then(() => { setEditingTodo(null); fetchAll(); });
   };
 
   const styles = {
@@ -80,98 +53,68 @@ function App() {
 
   return (
     <div style={styles.container}>
-      <h1>Tasks & Customers</h1>
+      <h1>Todo List</h1>
 
-      {/* Tasks */}
+      {/* 追加フォーム */}
       <section style={styles.section}>
-        <h2>Tasks ({tasks.length})</h2>
         <div style={styles.addRow}>
           <input
-            value={newTask}
-            onChange={e => setNewTask(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addTask()}
-            placeholder="新しいタスク..."
+            value={newTodo.title}
+            onChange={e => setNewTodo({ ...newTodo, title: e.target.value })}
+            placeholder="タスク..."
             style={styles.input}
           />
-          <button onClick={addTask} style={{ ...styles.btn, background: '#4CAF50', color: 'white' }}>追加</button>
-        </div>
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {tasks.map(t => (
-            <li key={t.id} style={styles.listItem}>
-              {editingTask?.id === t.id ? (
-                // 編集モード
-                <>
-                  <input
-                    value={editingTask.title}
-                    onChange={e => setEditingTask({ ...editingTask, title: e.target.value })}
-                    style={{ ...styles.input, flex: 1 }}
-                    autoFocus
-                  />
-                  <button onClick={() => saveTask(t)} style={{ ...styles.btn, background: '#2196F3', color: 'white' }}>保存</button>
-                  <button onClick={() => setEditingTask(null)} style={{ ...styles.btn, background: '#9E9E9E', color: 'white' }}>キャンセル</button>
-                </>
-              ) : (
-                // 表示モード
-                <>
-                  <input type="checkbox" checked={t.done} onChange={() => toggleTask(t)} />
-                  <span style={{ flex: 1, textDecoration: t.done ? 'line-through' : 'none', color: t.done ? '#999' : '#000' }}>
-                    {t.title}
-                  </span>
-                  <button onClick={() => setEditingTask(t)} style={{ ...styles.btn, background: '#FF9800', color: 'white' }}>✏️</button>
-                  <button onClick={() => deleteTask(t.id)} style={{ ...styles.btn, background: '#f44336', color: 'white' }}>🗑</button>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Customers */}
-      <section style={styles.section}>
-        <h2>Customers ({customers.length})</h2>
-        <div style={styles.addRow}>
           <input
-            value={newCustomer.name}
-            onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })}
+            value={newTodo.name}
+            onChange={e => setNewTodo({ ...newTodo, name: e.target.value })}
             placeholder="名前..."
-            style={{ ...styles.input, flex: 2 }}
+            style={{ ...styles.input, flex: 1 }}
           />
           <input
-            value={newCustomer.jender}
-            onChange={e => setNewCustomer({ ...newCustomer, jender: e.target.value })}
+            value={newTodo.jender}
+            onChange={e => setNewTodo({ ...newTodo, jender: e.target.value })}
             placeholder="性別..."
             style={{ ...styles.input, flex: 1 }}
           />
-          <button onClick={addCustomer} style={{ ...styles.btn, background: '#4CAF50', color: 'white' }}>追加</button>
+          <button onClick={addTodo} style={{ ...styles.btn, background: '#4CAF50', color: 'white' }}>追加</button>
         </div>
+      </section>
+
+      {/* リスト */}
+      <section style={styles.section}>
+        <h2>Todos ({todos.length})</h2>
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          {customers.map(c => (
-            <li key={c.id} style={styles.listItem}>
-              {editingCustomer?.id === c.id ? (
-                // 編集モード
+          {todos.map(t => (
+            <li key={t.id} style={styles.listItem}>
+              {editingTodo?.id === t.id ? (
                 <>
                   <input
-                    value={editingCustomer.name}
-                    onChange={e => setEditingCustomer({ ...editingCustomer, name: e.target.value })}
-                    placeholder="名前..."
-                    style={{ ...styles.input, flex: 2 }}
+                    value={editingTodo.title}
+                    onChange={e => setEditingTodo({ ...editingTodo, title: e.target.value })}
+                    style={styles.input}
                     autoFocus
                   />
                   <input
-                    value={editingCustomer.jender}
-                    onChange={e => setEditingCustomer({ ...editingCustomer, jender: e.target.value })}
-                    placeholder="性別..."
-                    style={{ ...styles.input, flex: 1 }}
+                    value={editingTodo.name}
+                    onChange={e => setEditingTodo({ ...editingTodo, name: e.target.value })}
+                    style={styles.input}
                   />
-                  <button onClick={() => saveCustomer(c)} style={{ ...styles.btn, background: '#2196F3', color: 'white' }}>保存</button>
-                  <button onClick={() => setEditingCustomer(null)} style={{ ...styles.btn, background: '#9E9E9E', color: 'white' }}>キャンセル</button>
+                  <input
+                    value={editingTodo.jender}
+                    onChange={e => setEditingTodo({ ...editingTodo, jender: e.target.value })}
+                    style={styles.input}
+                  />
+                  <button onClick={saveTodo} style={{ ...styles.btn, background: '#2196F3', color: 'white' }}>保存</button>
+                  <button onClick={() => setEditingTodo(null)} style={{ ...styles.btn, background: '#9E9E9E', color: 'white' }}>キャンセル</button>
                 </>
               ) : (
-                // 表示モード
                 <>
-                  <span style={{ flex: 1 }}>{c.name} <span style={{ color: '#888' }}>({c.jender})</span></span>
-                  <button onClick={() => setEditingCustomer(c)} style={{ ...styles.btn, background: '#FF9800', color: 'white' }}>✏️</button>
-                  <button onClick={() => deleteCustomer(c.id)} style={{ ...styles.btn, background: '#f44336', color: 'white' }}>🗑</button>
+                  <input type="checkbox" checked={t.done} onChange={() => toggleTodo(t)} />
+                  <span style={{ flex: 1, textDecoration: t.done ? 'line-through' : 'none', color: t.done ? '#999' : '#000' }}>
+                    {t.title} <span style={{ color: '#888', fontSize: 12 }}>— {t.name} ({t.jender})</span>
+                  </span>
+                  <button onClick={() => setEditingTodo(t)} style={{ ...styles.btn, background: '#FF9800', color: 'white' }}>✏️</button>
+                  <button onClick={() => deleteTodo(t.id)} style={{ ...styles.btn, background: '#f44336', color: 'white' }}>🗑</button>
                 </>
               )}
             </li>

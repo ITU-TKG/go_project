@@ -9,35 +9,35 @@ import (
     "gin_pro/repository"
 )
 
-func GetTasks(c *gin.Context) {
-    tasks, _ := repository.GetAllTasks()
-    c.JSON(http.StatusOK, tasks)
+func GetTodos(c *gin.Context) {
+    todos, _ := repository.GetAllTodos()
+    c.JSON(http.StatusOK, todos)
 }
 
-func CreateTask(c *gin.Context) {
-    var t models.Task
+func CreateTodo(c *gin.Context) {
+    var t models.Todo
     if err := c.BindJSON(&t); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
-    task, _ := repository.CreateTask(t)
-    c.JSON(http.StatusCreated, task)
+    todo, _ := repository.CreateTodo(t)
+    c.JSON(http.StatusCreated, todo)
 }
 
-func UpdateTask(c *gin.Context) {
+func UpdateTodo(c *gin.Context) {
     id, _ := strconv.Atoi(c.Param("id"))
-    var t models.Task
+    var t models.Todo
     if err := c.BindJSON(&t); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
     t.ID = id
-    repository.UpdateTask(t)
+    repository.UpdateTodo(t)
     c.JSON(http.StatusOK, t)
 }
 
-func DeleteTask(c *gin.Context) {
+func DeleteTodo(c *gin.Context) {
     id, _ := strconv.Atoi(c.Param("id"))
-    repository.DeleteTask(id)
+    repository.DeleteTodo(id)
     c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
