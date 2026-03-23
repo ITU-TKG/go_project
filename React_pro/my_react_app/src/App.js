@@ -70,12 +70,16 @@ function App() {
             placeholder="名前..."
             style={{ ...styles.input, flex: 1 }}
           />
-          <input
+          <select
             value={newTodo.jender}
             onChange={e => setNewTodo({ ...newTodo, jender: e.target.value })}
-            placeholder="性別..."
-            style={{ ...styles.input, flex: 1 }}
-          />
+            style={styles.input}
+          >
+            <option value="">選択してください</option>
+            <option value="男性">男性</option>
+            <option value="女性">女性</option>
+            <option value="無回答">無回答</option>
+          </select>
           <button onClick={addTodo} style={{ ...styles.btn, background: '#4CAF50', color: 'white' }}>追加</button>
         </div>
       </section>
@@ -87,6 +91,7 @@ function App() {
           {todos.map(t => (
             <li key={t.id} style={styles.listItem}>
               {editingTodo?.id === t.id ? (
+                // 編集モード
                 <>
                   <input
                     value={editingTodo.title}
@@ -99,15 +104,20 @@ function App() {
                     onChange={e => setEditingTodo({ ...editingTodo, name: e.target.value })}
                     style={styles.input}
                   />
-                  <input
+                  <select
                     value={editingTodo.jender}
                     onChange={e => setEditingTodo({ ...editingTodo, jender: e.target.value })}
                     style={styles.input}
-                  />
+                  >
+                    <option value="男性">男性</option>
+                    <option value="女性">女性</option>
+                    <option value="無回答">無回答</option>
+                  </select>
                   <button onClick={saveTodo} style={{ ...styles.btn, background: '#2196F3', color: 'white' }}>保存</button>
                   <button onClick={() => setEditingTodo(null)} style={{ ...styles.btn, background: '#9E9E9E', color: 'white' }}>キャンセル</button>
                 </>
               ) : (
+                // 表示モード
                 <>
                   <input type="checkbox" checked={t.done} onChange={() => toggleTodo(t)} />
                   <span style={{ flex: 1, textDecoration: t.done ? 'line-through' : 'none', color: t.done ? '#999' : '#000' }}>
