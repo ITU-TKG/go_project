@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
 const API = 'http://localhost:8080';
 
 function App() {
   const [todos, setTodos] = useState([]);
-  const [newTodo, setNewTodo] = useState({ title: '', name: '', jender: '' });
+  const [newTodo, setNewTodo] = useState({ title: '', name: '', jender: '', due_date: '' });
   const [editingTodo, setEditingTodo] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const fetchAll = () => {
     fetch(`${API}/todos`).then(r => r.json()).then(d => setTodos(d || []));
@@ -19,7 +22,7 @@ function App() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...newTodo, done: false }),
-    }).then(() => { setNewTodo({ title: '', name: '', jender: '' }); fetchAll(); });
+    }).then(() => { setNewTodo({ title: '', name: '', jender: '', due_date: '' }); fetchAll(); });
   };
 
   const deleteTodo = (id) => {
@@ -42,6 +45,18 @@ function App() {
     }).then(() => { setEditingTodo(null); fetchAll(); });
   };
 
+  // 選択した日付でフィルター
+  const filteredTodos = selectedDate
+    ? todos.filter(t => t.due_date === selectedDate)
+    : todos;
+
+  // カレンダーのタイルにTodoがある日付をマーク
+  const tileContent = ({ date }) => {
+    const dateStr = date.toISOString().split('T')[0];
+    const hasTodo = todos.some(t => t.due_date === dateStr);
+    return hasTodo ? <div style={{ width: 6, height: 6, background: '#4CAF50', borderRadius: '50%', margin: '0 auto' }} /> : null;
+  };
+
   const styles = {
     container: { maxWidth: 600, margin: '40px auto', fontFamily: 'sans-serif', padding: '0 16px' },
     section: { marginBottom: 40 },
@@ -54,6 +69,24 @@ function App() {
   return (
     <div style={styles.container}>
       <h1>Todo List</h1>
+      
+      {/* カレンダー */}
+      <section style={styles.section}>
+        <h2>カレンダー</h2>
+        <Calendar
+          onClickDay={date => {
+            const dateStr = date.toISOString().split('T')[0];
+            setSelectedDate(prev => prev === dateStr ? null : dateStr); // 同じ日付クリックで解除
+          }}
+          tileContent={tileContent}
+        />
+        {selectedDate && (
+          <p style={{ marginTop: 8 }}>
+            📅 {selectedDate} のTodoを表示中
+            <button onClick={() => setSelectedDate(null)} style={{ ...styles.btn, marginLeft: 8, background: '#9E9E9E', color: 'white' }}>解除</button>
+          </p>
+        )}
+      </section>
 
       {/* 追加フォーム */}
       <section style={styles.section}>
