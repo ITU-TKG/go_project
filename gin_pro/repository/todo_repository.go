@@ -27,7 +27,7 @@ func GetAllTodos() ([]models.Todo, error) {
 }
 
 func CreateTodo(t models.Todo) (models.Todo, error) {
-	res, err := db.DB.Exec("INSERT INTO todos(title, name, jender, done) VALUES(?, ?, ?, ?)", t.Title, t.Name, t.Jender, t.Done)
+	res, err := db.DB.Exec("INSERT INTO todos(title, name, jender, done, due_date) VALUES(?, ?, ?, ?, ?)", t.Title, t.Name, t.Jender, t.Done, t.DueDate)
 	if err != nil {
 		return t, err
 	}

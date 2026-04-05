@@ -4,6 +4,13 @@ import 'react-calendar/dist/Calendar.css';
 
 const API = 'http://localhost:8080';
 
+const toLocalDateStr = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
 function App() {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState({ title: '', name: '', jender: '', due_date: '' });
@@ -11,8 +18,11 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const fetchAll = () => {
-    fetch(`${API}/todos`).then(r => r.json()).then(d => setTodos(d || []));
-  };
+  fetch(`${API}/todos`).then(r => r.json()).then(d => {
+    console.log('due_date:', d.map(t => t.due_date));  // ← 変更
+    setTodos(d || []);
+  });
+};
 
   useEffect(() => { fetchAll(); }, []);
 
@@ -27,14 +37,6 @@ function App() {
 
   const deleteTodo = (id) => {
     fetch(`${API}/todos/${id}`, { method: 'DELETE' }).then(fetchAll);
-  };
-
-  const toggleTodo = (todo) => {
-    fetch(`${API}/todos/${todo.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...todo, done: !todo.done }),
-    }).then(fetchAll);
   };
 
   const saveTodo = () => {
@@ -52,7 +54,7 @@ function App() {
 
   // カレンダーのタイルにTodoがある日付をマーク
   const tileContent = ({ date }) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = toLocalDateStr(date);
     const hasTodo = todos.some(t => t.due_date === dateStr);
     return hasTodo ? <div style={{ width: 6, height: 6, background: '#4CAF50', borderRadius: '50%', margin: '0 auto' }} /> : null;
   };
@@ -75,7 +77,7 @@ function App() {
         <h2>カレンダー</h2>
         <Calendar
           onClickDay={date => {
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = toLocalDateStr(date);
             setSelectedDate(prev => prev === dateStr ? null : dateStr); // 同じ日付クリックで解除
           }}
           tileContent={tileContent}
@@ -113,15 +115,21 @@ function App() {
             <option value="女性">女性</option>
             <option value="無回答">無回答</option>
           </select>
+          <input
+            type="date"
+            value={newTodo.due_date}
+            onChange={e => setNewTodo({ ...newTodo, due_date: e.target.value })}
+            style={styles.input}
+          />
           <button onClick={addTodo} style={{ ...styles.btn, background: '#4CAF50', color: 'white' }}>追加</button>
         </div>
       </section>
 
       {/* リスト */}
       <section style={styles.section}>
-        <h2>Todos ({todos.length})</h2>
+        <h2>Todos ({filteredTodos.length})</h2>
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          {todos.map(t => (
+          {filteredTodos.map(t => (
             <li key={t.id} style={styles.listItem}>
               {editingTodo?.id === t.id ? (
                 // 編集モード
@@ -152,7 +160,6 @@ function App() {
               ) : (
                 // 表示モード
                 <>
-                  <input type="checkbox" checked={t.done} onChange={() => toggleTodo(t)} />
                   <span style={{ flex: 1, textDecoration: t.done ? 'line-through' : 'none', color: t.done ? '#999' : '#000' }}>
                     {t.title} <span style={{ color: '#888', fontSize: 12 }}>— {t.name} ({t.jender})</span>
                   </span>
