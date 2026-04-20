@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"os"
 	"time"
 
 	"gin_pro/models"
@@ -12,7 +13,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtSecret = []byte("secret_key") // 後で環境変数に移す
+var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 // 新規登録
 func Register(c *gin.Context) {
