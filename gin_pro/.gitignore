@@ -7,4 +7,5 @@ bin/
 *.log
 
 # OS
-.DS_Store
+.DS_Store.env
+*.env
