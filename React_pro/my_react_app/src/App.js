@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import Login from './Login'; 
 
 const API = 'http://localhost:8080';
 
@@ -12,20 +13,24 @@ const toLocalDateStr = (date) => {
 };
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState({ title: '', name: '', jender: '', due_date: '' });
   const [editingTodo, setEditingTodo] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-
   const fetchAll = () => {
-  fetch(`${API}/todos`).then(r => r.json()).then(d => {
-    console.log('due_date:', d.map(t => t.due_date));  // ← 変更
-    setTodos(d || []);
-  });
-};
-
+    fetch(`${API}/todos`).then(r => r.json()).then(d => {
+      console.log('due_date:', d.map(t => t.due_date));
+      setTodos(d || []);
+    });
+  };
+  
   useEffect(() => { fetchAll(); }, []);
 
+  if (!isLoggedIn) {
+    return <Login onLogin={() => setIsLoggedIn(true)} />;
+  }
+  
   const addTodo = () => {
     if (!newTodo.title.trim() || !newTodo.name.trim()) return;
     fetch(`${API}/todos`, {
