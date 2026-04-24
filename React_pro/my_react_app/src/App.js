@@ -24,13 +24,21 @@ function App() {
       setTodos(d || []);
     });
   };
-  
-  useEffect(() => { fetchAll(); }, []);
 
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchAll();
+    }
+  }, [isLoggedIn]);
+  
   if (!isLoggedIn) {
     return <Login onLogin={() => setIsLoggedIn(true)} />;
   }
-  
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+  };
+
   const addTodo = () => {
     if (!newTodo.title.trim() || !newTodo.name.trim()) return;
     fetch(`${API}/todos`, {
@@ -75,7 +83,12 @@ function App() {
 
   return (
     <div style={styles.container}>
-      <h1>Todo List</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>Todo List</h1>
+        <button onClick={handleLogout} style={{ ...styles.btn, background: '#f44336', color: 'white' }}>
+          ログアウト
+        </button>
+      </div>
       
       {/* カレンダー */}
       <section style={styles.section}>
