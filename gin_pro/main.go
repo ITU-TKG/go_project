@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"gin_pro/handlers"
+	"gin_pro/middleware"
 	"os"
 
 	"gin_pro/db"
@@ -24,18 +25,23 @@ func main() {
 			"http://localhost:3001",
 		},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
-		AllowHeaders: []string{"Content-Type"},
+		AllowHeaders: []string{"Content-Type", "Authorization"},
 	}))
 
 	fmt.Println("HOST:", os.Getenv("DB_HOST"))
 	fmt.Println("PORT:", os.Getenv("DB_PORT"))
 
-	r.GET("/todos", handlers.GetTodos)
-	r.POST("/todos", handlers.CreateTodo)
-	r.PUT("/todos/:id", handlers.UpdateTodo)
-	r.DELETE("/todos/:id", handlers.DeleteTodo)
 	r.POST("/register", handlers.Register)
 	r.POST("/login", handlers.Login)
+
+	auth := r.Group("/")
+	auth.Use(middleware.AuthMiddleware())
+	{
+		auth.GET("/todos", handlers.GetTodos)
+		auth.POST("/todos", handlers.CreateTodo)
+		auth.PUT("/todos/:id", handlers.UpdateTodo)
+		auth.DELETE("/todos/:id", handlers.DeleteTodo)
+	}
 
 	r.Run(":8080")
 }

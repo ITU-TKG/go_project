@@ -18,9 +18,19 @@ function App() {
   const [newTodo, setNewTodo] = useState({ title: '', name: '', jender: '', due_date: '' });
   const [editingTodo, setEditingTodo] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
+  
+  const authHeader = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${localStorage.getItem('token')}`
+});
+
   const fetchAll = () => {
-    fetch(`${API}/todos`).then(r => r.json()).then(d => {
-      console.log('due_date:', d.map(t => t.due_date));
+    const token = localStorage.getItem('token');
+    fetch(`${API}/todos`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }).then(r => r.json()).then(d => {
       setTodos(d || []);
     });
   };
@@ -43,19 +53,22 @@ function App() {
     if (!newTodo.title.trim() || !newTodo.name.trim()) return;
     fetch(`${API}/todos`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeader(),
       body: JSON.stringify({ ...newTodo, done: false }),
     }).then(() => { setNewTodo({ title: '', name: '', jender: '', due_date: '' }); fetchAll(); });
   };
 
   const deleteTodo = (id) => {
-    fetch(`${API}/todos/${id}`, { method: 'DELETE' }).then(fetchAll);
+    fetch(`${API}/todos/${id}`, {
+      method: 'DELETE',
+      headers: authHeader()
+    }).then(fetchAll);
   };
 
   const saveTodo = () => {
     fetch(`${API}/todos/${editingTodo.id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeader(),
       body: JSON.stringify(editingTodo),
     }).then(() => { setEditingTodo(null); fetchAll(); });
   };
